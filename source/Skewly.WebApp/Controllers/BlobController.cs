@@ -58,7 +58,7 @@ namespace Skewly.WebApp.Controllers
             await Store.Patch(id, patch, ct);
         }
 
-        [HttpDelete("{id")]
+        [HttpDelete("{id}")]
         public async Task DeleteBlob(string id, CancellationToken ct = default)
         {
             await Store.Delete(id, ct);
