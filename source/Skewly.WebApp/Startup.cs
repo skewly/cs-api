@@ -66,9 +66,11 @@ namespace Skewly.WebApp
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseMiddleware<MultitenantMiddleware>();
-
-            app.UseClientRateLimiting();
+            app.UseWhen(context => !context.Request.Path.Equals("/"), appBuilder =>
+            {
+                appBuilder.UseMiddleware<MultitenantMiddleware>();
+                appBuilder.UseClientRateLimiting();
+            });
 
             app.UseRouting();
 

@@ -93,7 +93,7 @@ namespace Skewly.WebApp.RateLimit
                     {
                         Endpoint = "*:/*",
                         Period = "1m",
-                        Limit = 1
+                        Limit = 10
                     }
                 }
             });
@@ -107,7 +107,7 @@ namespace Skewly.WebApp.RateLimit
                     {
                         Endpoint = "*:/*",
                         Period = "1m",
-                        Limit = 5
+                        Limit = 30
                     }
                 }
             });
@@ -121,7 +121,7 @@ namespace Skewly.WebApp.RateLimit
                     {
                         Endpoint = "*:/*",
                         Period = "1m",
-                        Limit = 10
+                        Limit = 150
                     }
                 }
             });
@@ -135,7 +135,7 @@ namespace Skewly.WebApp.RateLimit
                     {
                         Endpoint = "*:/*",
                         Period = "1m",
-                        Limit = 20
+                        Limit = 300
                     }
                 }
             });
