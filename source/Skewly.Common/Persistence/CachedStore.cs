@@ -2,9 +2,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Skewtech.Common.Persistence
+namespace Skewly.Common.Persistence
 {
-    public class CachedStore<T> : IStore<T> where T : class, new()
+    public class CachedStore<T> : IStore<T> where T : Document, new()
     {
         private IStore<T> Store { get; }
         private IDistributedCache Cache { get; }

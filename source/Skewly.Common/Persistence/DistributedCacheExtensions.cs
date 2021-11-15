@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Skewtech.Common.Persistence
+namespace Skewly.Common.Persistence
 {
     public static class DistributedCacheExtensions
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Skewtech.Common
+namespace Skewly.Common
 {
     public abstract class AttributeDefinition
     {

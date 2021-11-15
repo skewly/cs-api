@@ -5,11 +5,11 @@ VisualStudioVersion = 16.0.30711.63
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skewly.WebApp", "Skewly.WebApp\Skewly.WebApp.csproj", "{11034FB3-6E30-4B50-9C00-A7B7ECB21F3B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skewtech.Common", "Skewly.Common\Skewtech.Common.csproj", "{D7AD4C86-F293-4971-B3D7-35F8BB51EF83}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skewly.Common", "Skewly.Common\Skewly.Common.csproj", "{D7AD4C86-F293-4971-B3D7-35F8BB51EF83}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skewtech.Common.Tests", "Skewly.Common.Tests\Skewtech.Common.Tests.csproj", "{CAE08E29-7832-426E-9097-432CCD1305DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skewly.Common.Tests", "Skewly.Common.Tests\Skewly.Common.Tests.csproj", "{CAE08E29-7832-426E-9097-432CCD1305DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skewly.Providers.elasticsearch", "Skewly.Providers.elasticsearch\Skewly.Providers.elasticsearch.csproj", "{4D2EA353-EEE6-4AB3-9979-E00C8B3D8163}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skewly.Providers.elasticsearch", "Skewly.Providers.elasticsearch\Skewly.Providers.elasticsearch.csproj", "{4D2EA353-EEE6-4AB3-9979-E00C8B3D8163}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

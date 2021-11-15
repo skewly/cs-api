@@ -1,4 +1,4 @@
-﻿namespace Skewtech.Common.Persistence
+﻿namespace Skewly.Common.Persistence
 {
     public interface IQuery
     {

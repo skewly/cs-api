@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Skewtech.Common
+namespace Skewly.Common
 {
     public abstract class AttributeDefinition<T> : AttributeDefinition
     {

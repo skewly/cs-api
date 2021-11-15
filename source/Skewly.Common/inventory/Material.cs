@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Skewtech.Common
+namespace Skewly.Common
 {
     public class Material
     {

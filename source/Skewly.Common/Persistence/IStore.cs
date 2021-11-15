@@ -1,10 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Skewtech.Common.Persistence
+namespace Skewly.Common.Persistence
 {
-
-    public interface IStore<T> where T : class, new()
+    public interface IStore<T> where T : Document, new()
     {
         Task<Page<T>> Get(IQuery query, CancellationToken ct = default); 
         Task<T> Get(string id, CancellationToken ct = default);

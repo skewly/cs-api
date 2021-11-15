@@ -24,6 +24,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: App Settings Variable Substitution
+      uses: microsoft/variable-substitution@v1
+      with:
+        files: './source/Skewly.WebApp/appsettings.json'
+      env:
+        Redis.Configuration: ${{ env.REDIS }}
+        Elasticsearch.Server: ${{ env.ELASTICSEARCH }}
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:

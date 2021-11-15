@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnitsNet;
 
-namespace Skewtech.Common.Tests
+namespace Skewly.Common.Tests
 {
     [TestClass]
     public class InventoryTests

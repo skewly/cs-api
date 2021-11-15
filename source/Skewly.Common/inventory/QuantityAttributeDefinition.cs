@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnitsNet;
 
-namespace Skewtech.Common
+namespace Skewly.Common
 {
     public class QuantityAttributeDefinition : AttributeDefinition<IQuantity>
     {

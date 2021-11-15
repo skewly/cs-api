@@ -1,43 +1,20 @@
+using AspNetCoreRateLimit;
+using AspNetCoreRateLimit.Redis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Nest;
-using Skewly.Providers.elasticsearch;
-using Skewtech.Common.Persistence;
+using Skewly.WebApp.Extensions;
+using Skewly.WebApp.Middleware;
+using Skewly.WebApp.RateLimit;
+using StackExchange.Redis;
 using System;
 
 namespace Skewly.WebApp
 {
-    public class StoreFactory
-    {
-        private IServiceProvider ServiceProvider { get; }
-
-        public StoreFactory(IServiceProvider provider)
-        {
-            ServiceProvider = provider;
-        }
-
-        public IStore<T> BuildStore<T>(bool enableCache = false) where T : class, new()
-        {
-            var store = ServiceProvider.GetRequiredService<IStore<T>>();
-
-            if(!enableCache)
-            {
-                return store;
-            }
-            else
-            {
-                var cache = ServiceProvider.GetRequiredService<IDistributedCache>();
-
-                return new CachedStore<T>(store, cache);
-            }
-        }
-    }
-
     public class Startup
     {
         public IConfiguration Configuration { get; }
@@ -50,19 +27,26 @@ namespace Skewly.WebApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpContextAccessor();
+
             services.AddControllersWithViews();
 
-            services.AddDistributedRedisCache(options =>
+            services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration = Configuration.GetValue<string>("Redis:Configuration");
                 options.InstanceName = Configuration.GetValue<string>("Redis:InstanceName");
             });
 
             services.AddSingleton<IElasticClient>((sp) => new ElasticClient(new Uri(Configuration.GetValue<string>("Elasticsearch:Server"))));
-            
-            services.AddSingleton(typeof(IStore<>), typeof(Store<>));
 
-            services.AddSingleton<StoreFactory>();
+            services.AddStores();
+
+            // Rate Limiting
+            services.Configure<ClientRateLimitOptions>(Configuration.GetSection("ClientRateLimiting"));
+            services.AddSingleton<IConnectionMultiplexer>(provider => ConnectionMultiplexer.Connect(Configuration.GetValue<string>("Redis:Configuration")));
+            services.AddRedisRateLimiting();
+            services.AddSingleton<IClientPolicyStore, ClientSubscriptionPolicyStore>();
+            services.AddSingleton<IRateLimitConfiguration, CustomRateLimitConfiguration>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -81,6 +65,10 @@ namespace Skewly.WebApp
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            app.UseMiddleware<MultitenantMiddleware>();
+
+            app.UseClientRateLimiting();
 
             app.UseRouting();
 

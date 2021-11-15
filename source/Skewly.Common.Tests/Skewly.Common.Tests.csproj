@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Skewly.Common\Skewtech.Common.csproj" />
+    <ProjectReference Include="..\Skewly.Common\Skewly.Common.csproj" />
   </ItemGroup>
 
 </Project>
