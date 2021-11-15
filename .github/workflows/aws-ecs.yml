@@ -29,8 +29,8 @@ jobs:
       with:
         files: './source/Skewly.WebApp/appsettings.json'
       env:
-        Redis.Configuration: ${{ env.REDIS }}
-        Elasticsearch.Server: ${{ env.ELASTICSEARCH }}
+        Redis.Configuration: ${{ secrets.REDIS }}
+        Elasticsearch.Server: ${{ secrets.ELASTICSEARCH }}
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
