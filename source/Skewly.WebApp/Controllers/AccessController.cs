@@ -3,6 +3,9 @@ using Skewly.Common.Persistence;
 using System.Threading;
 using System.Threading.Tasks;
 using Skewly.Common.Models;
+using System.Collections.Generic;
+using System;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Skewly.WebApp.Controllers
 {
@@ -17,6 +20,17 @@ namespace Skewly.WebApp.Controllers
         {
             ApiKeys = apiKeys;
             Organizations = organizations;
+        }
+
+        [Authorize, HttpGet("organizations")]
+        public Task<List<Organization>> GetOrganizations()
+        {
+            var organizations = new List<Organization>
+            {
+                new Organization { Id = Guid.NewGuid().ToString(), Name = "Fake Organization", Subscription = "free" }
+            };
+
+            return Task.FromResult(organizations);
         }
 
         [HttpPut("organization/{id}")]

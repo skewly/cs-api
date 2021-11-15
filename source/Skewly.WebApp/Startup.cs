@@ -1,5 +1,6 @@
 using AspNetCoreRateLimit;
 using AspNetCoreRateLimit.Redis;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -27,6 +28,19 @@ namespace Skewly.WebApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(
+                    builder =>
+                    {
+                        builder
+                            .AllowAnyOrigin()
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
+                    }
+                );
+            });
+
             services.AddHttpContextAccessor();
 
             services.AddControllersWithViews();
@@ -47,11 +61,23 @@ namespace Skewly.WebApp
             services.AddRedisRateLimiting();
             services.AddSingleton<IClientPolicyStore, ClientSubscriptionPolicyStore>();
             services.AddSingleton<IRateLimitConfiguration, CustomRateLimitConfiguration>();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.Authority = "https://dev-ko-0isuz.us.auth0.com/";
+                options.Audience = "https://api.skewly.io/";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCors();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -73,6 +99,9 @@ namespace Skewly.WebApp
             });
 
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
