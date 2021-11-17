@@ -1,44 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Elasticsearch.Net;
 using Nest;
-using Skewly.Common.Models;
 using Skewly.Common.Persistence;
-using Skewly.Common.Extensions;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Elasticsearch.Net;
 
 namespace Skewly.Providers.elasticsearch
 {
-    public class StoreFactory
-    {
-        private IServiceProvider ServiceProvider { get; }
-
-        public StoreFactory(IServiceProvider provider)
-        {
-            ServiceProvider = provider;
-        }
-
-        public IStore<T> BuildStore<T>(bool enableCache = false) where T : Document, new()
-        {
-            var store = ServiceProvider.GetRequiredService<IStore<T>>();
-
-            if (!enableCache)
-            {
-                return store;
-            }
-            else
-            {
-                var cache = ServiceProvider.GetRequiredService<IDistributedCache>();
-
-                return new CachedStore<T>(store, cache);
-            }
-        }
-    }
-
     public class Store<T> : IStore<T> where T : Document, new()
     {
         protected IElasticClient Client { get; }
@@ -73,7 +42,10 @@ namespace Skewly.Providers.elasticsearch
 
         protected virtual IPromise<IProperties> PropertyMapping(PropertiesDescriptor<T> descriptor)
         {
-            return descriptor;
+            return descriptor
+                .Keyword(s => s
+                    .Name(n => n.Id)
+                );
         }
 
         protected virtual string DetermineIndexName()
@@ -88,9 +60,19 @@ namespace Skewly.Providers.elasticsearch
             return default;
         }
 
-        protected virtual QueryContainer QueryContainerDescriptor(QueryContainerDescriptor<T> descriptor)
+        protected virtual QueryContainer QueryContainerDescriptor(QueryContainerDescriptor<T> descriptor, Common.Persistence.IQuery query)
         {
-            return descriptor.MatchAll();
+            switch(query)
+            {
+                case Common.Persistence.TermQuery termQuery:
+                    return descriptor.Term(t => t.Field(termQuery.Field).Value(termQuery.Term));
+                case Common.Persistence.TermsQuery termsQuery:
+                    return descriptor.Terms(t => t.Field(termsQuery.Field).Terms(termsQuery.Terms));
+                case Common.Persistence.AndQuery andQuery:
+                    return descriptor.Bool(b => b.Must(andQuery.Queries.Select(q => QueryContainerDescriptor(descriptor, q)).ToArray()));
+                default:
+                    return descriptor.MatchAll();
+            }
         }
 
         protected virtual T BeforeWrite(T obj)
@@ -103,7 +85,7 @@ namespace Skewly.Providers.elasticsearch
             var skip = query.Skip;
             var take = query.Take;
 
-            var response = await Client.SearchAsync<T>(i => i.Index(DetermineIndexName()).Routing(DetermineRouting()).Query(q => QueryContainerDescriptor(q)).From(skip).Size(take), ct);
+            var response = await Client.SearchAsync<T>(i => i.Index(DetermineIndexName()).Routing(DetermineRouting()).Query(q => QueryContainerDescriptor(q, query)).From(skip).Size(take), ct);
 
             if(!response.IsValid)
             {
@@ -185,56 +167,6 @@ namespace Skewly.Providers.elasticsearch
             {
                 throw response.OriginalException;
             }
-        }
-    }
-
-    public class MultitenantDocument : Document
-    {
-        public string Organization { get; set; }
-    }
-
-    public class MultitenantStore<T> : Store<T> where T : MultitenantDocument, new()
-    {
-        protected IHttpContextAccessor Accessor { get; set; }
-
-        public MultitenantStore(IElasticClient client, IHttpContextAccessor accessor) : base(client)
-        {
-            Accessor = accessor;
-        }
-
-        protected override IRoutingField Routing(RoutingFieldDescriptor<T> descriptor)
-        {
-            return descriptor.Required();
-        }
-
-        protected override Routing DetermineRouting()
-        {
-            if(Accessor.HttpContext.Items.TryGetValue<string, Organization>("organization", out var organization))
-            {
-                return new Routing(organization.Id);
-            }
-
-            return base.DetermineRouting();
-        }
-
-        protected override QueryContainer QueryContainerDescriptor(QueryContainerDescriptor<T> descriptor)
-        {
-            if(Accessor.HttpContext.Items.TryGetValue<string, Organization>("organization", out var organization))
-            {
-                return descriptor.Term(t => t.Field(f => f.Organization).Value(organization.Id));
-            }
-
-            return base.QueryContainerDescriptor(descriptor);
-        }
-
-        protected override T BeforeWrite(T obj)
-        {
-            if (Accessor.HttpContext.Items.TryGetValue<string, Organization>("organization", out var organization))
-            {
-                obj.Organization = organization.Id;
-            }
-
-            return base.BeforeWrite(obj);
         }
     }
 }

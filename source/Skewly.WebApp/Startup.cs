@@ -51,7 +51,14 @@ namespace Skewly.WebApp
                 options.InstanceName = Configuration.GetValue<string>("Redis:InstanceName");
             });
 
-            services.AddSingleton<IElasticClient>((sp) => new ElasticClient(new Uri(Configuration.GetValue<string>("Elasticsearch:Server"))));
+            services.AddSingleton<IElasticClient>((sp) =>
+            {
+                var connectionSettings = new ConnectionSettings(new Uri(Configuration.GetValue<string>("Elasticsearch:Server")));
+
+                connectionSettings.DisableDirectStreaming();
+
+                return new ElasticClient(connectionSettings);
+            });
 
             services.AddStores();
 
