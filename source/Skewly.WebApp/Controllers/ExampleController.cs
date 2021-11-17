@@ -26,7 +26,7 @@ namespace Skewly.WebApp.Controllers
         [HttpGet]
         public async Task<Page<Example>> GetExamples(int skip = 0, int take = 50, CancellationToken ct = default)
         {
-            var query = new QueryAll
+            var query = new QueryBase
             {
                 Skip = skip,
                 Take = take

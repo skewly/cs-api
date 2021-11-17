@@ -66,6 +66,7 @@ namespace Skewly.WebApp.Extensions
         public static void AddStores(this IServiceCollection services)
         {
             services.AddStore<Common.Models.ApiKey>(true);
+            services.AddStore<OrganizationPermission>(true);
             services.AddStore<Organization>(true);
             services.AddMultitenantStore<Example>();
         }
