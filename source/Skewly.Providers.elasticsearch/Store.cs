@@ -68,7 +68,7 @@ namespace Skewly.Providers.elasticsearch
                     return descriptor.Term(t => t.Field(termQuery.Field).Value(termQuery.Term));
                 case Common.Persistence.TermsQuery termsQuery:
                     return descriptor.Terms(t => t.Field(termsQuery.Field).Terms(termsQuery.Terms));
-                case Common.Persistence.AndQuery andQuery:
+                case AndQuery andQuery:
                     return descriptor.Bool(b => b.Must(andQuery.Queries.Select(q => QueryContainerDescriptor(descriptor, q)).ToArray()));
                 default:
                     return descriptor.MatchAll();
@@ -80,12 +80,12 @@ namespace Skewly.Providers.elasticsearch
             return obj;
         }
 
-        public async Task<Page<T>> Get(Common.Persistence.IQuery query, CancellationToken ct = default)
+        public async Task<Page<T>> Search(ISearch search, CancellationToken ct = default)
         {
-            var skip = query.Skip;
-            var take = query.Take;
+            var skip = search.Skip;
+            var take = search.Take;
 
-            var response = await Client.SearchAsync<T>(i => i.Index(DetermineIndexName()).Routing(DetermineRouting()).Query(q => QueryContainerDescriptor(q, query)).From(skip).Size(take), ct);
+            var response = await Client.SearchAsync<T>(i => i.Index(DetermineIndexName()).Routing(DetermineRouting()).Query(q => QueryContainerDescriptor(q, search.Query)).From(skip).Size(take), ct);
 
             if(!response.IsValid)
             {

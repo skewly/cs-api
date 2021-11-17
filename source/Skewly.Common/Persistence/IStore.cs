@@ -5,7 +5,7 @@ namespace Skewly.Common.Persistence
 {
     public interface IStore<T> where T : Document, new()
     {
-        Task<Page<T>> Get(IQuery query, CancellationToken ct = default); 
+        Task<Page<T>> Search(ISearch search, CancellationToken ct = default); 
         Task<T> Get(string id, CancellationToken ct = default);
         Task Put(string id, T data, CancellationToken ct = default);
         Task<string> Post(T data, CancellationToken ct = default);

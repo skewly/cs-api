@@ -70,7 +70,7 @@ namespace Skewly.WebApp.Controllers
                 }
             });
 
-            var permissions = await OrganizationPermissions.Get(permissionsQuery, ct);
+            var permissions = await OrganizationPermissions.Search(new Search { Query = permissionsQuery, Skip = skip, Take = take }, ct);
 
             var organizationIds = permissions.Results.Select(p => p.Organization);
 
@@ -80,7 +80,7 @@ namespace Skewly.WebApp.Controllers
                 Terms = organizationIds
             };
 
-            var organizations = await Organizations.Get(organizationsQuery, ct);
+            var organizations = await Organizations.Search(new Search { Query = organizationsQuery, Skip = skip, Take = take }, ct);
 
             return organizations;
         }

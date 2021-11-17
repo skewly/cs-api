@@ -22,10 +22,10 @@ namespace Skewly.Common.Persistence
             return index;
         }
 
-        public async Task<Page<T>> Get(IQuery query, CancellationToken ct)
+        public async Task<Page<T>> Search(ISearch search, CancellationToken ct)
         {
             // We don't cache queries because the keys wouldn't promote uniqueness
-            return await Store.Get(query, ct);
+            return await Store.Search(search, ct);
         }
 
         public async Task<T> Get(string id, CancellationToken ct)

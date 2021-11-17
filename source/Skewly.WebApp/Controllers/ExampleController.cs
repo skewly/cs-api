@@ -24,15 +24,15 @@ namespace Skewly.WebApp.Controllers
         }
 
         [HttpGet]
-        public async Task<Page<Example>> GetExamples(int skip = 0, int take = 50, CancellationToken ct = default)
+        public async Task<Page<Example>> SearchExamples(int skip = 0, int take = 50, CancellationToken ct = default)
         {
-            var query = new QueryBase
+            var search = new Search
             {
                 Skip = skip,
                 Take = take
             };
 
-            return await Store.Get(query, ct);
+            return await Store.Search(search, ct);
         }
 
         [HttpGet("{id}")]
