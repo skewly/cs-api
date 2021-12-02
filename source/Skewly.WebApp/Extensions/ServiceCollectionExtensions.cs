@@ -6,6 +6,7 @@ using Skewly.WebApp.Controllers;
 using Skewly.Common.Persistence;
 using Microsoft.Extensions.Caching.Distributed;
 using Skewly.Common.Models;
+using Skewly.WebApp.Stores;
 
 namespace Skewly.WebApp.Extensions
 {
@@ -65,7 +66,16 @@ namespace Skewly.WebApp.Extensions
 
         public static void AddStores(this IServiceCollection services)
         {
-            services.AddStore<Common.Models.ApiKey>(true);
+            services.AddSingleton<IStore<Common.Models.ApiKey>>((provider) =>
+            {
+                var client = provider.GetRequiredService<IElasticClient>();
+                var cache = provider.GetRequiredService<IDistributedCache>();
+
+                var store = new ApiKeyStore(client);
+
+                return new CachedStore<Common.Models.ApiKey>(store, cache);
+            });
+
             services.AddStore<OrganizationPermission>(true);
             services.AddStore<Organization>(true);
             services.AddMultitenantStore<Example>();

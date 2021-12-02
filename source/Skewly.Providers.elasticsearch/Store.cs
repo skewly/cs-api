@@ -64,10 +64,14 @@ namespace Skewly.Providers.elasticsearch
         {
             switch(query)
             {
-                case Common.Persistence.TermQuery termQuery:
-                    return descriptor.Term(t => t.Field(termQuery.Field).Value(termQuery.Term));
-                case Common.Persistence.TermsQuery termsQuery:
-                    return descriptor.Terms(t => t.Field(termsQuery.Field).Terms(termsQuery.Terms));
+                case TermQuery<T, string> stringTermQuery:
+                    return descriptor.Term(stringTermQuery.Field, stringTermQuery.Term);
+                case TermQuery<T, bool> booleanTermQuery:
+                    return descriptor.Term(booleanTermQuery.Field, booleanTermQuery.Term);
+                case TermsQuery<T, string> stringTermsQuery:
+                    return descriptor.Terms(t => t.Field(stringTermsQuery.Field).Terms(stringTermsQuery.Terms));
+                case TermsQuery<T, bool> booleanTermsQuery:
+                    return descriptor.Terms(t => t.Field(booleanTermsQuery.Field).Terms(booleanTermsQuery.Terms));
                 case AndQuery andQuery:
                     return descriptor.Bool(b => b.Must(andQuery.Queries.Select(q => QueryContainerDescriptor(descriptor, q)).ToArray()));
                 default:

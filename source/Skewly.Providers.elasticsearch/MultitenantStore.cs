@@ -45,7 +45,7 @@ namespace Skewly.Providers.elasticsearch
         {
             if(Accessor.HttpContext.Items.TryGetValue<string, Organization>("organization", out var organization))
             {
-                var andQuery = new AndQuery(new List<Common.Persistence.IQuery> { query, new Common.Persistence.TermQuery { Field = "organization", Term = organization.Id } });
+                var andQuery = new AndQuery(new List<Common.Persistence.IQuery> { query, new TermQuery<T, string> { Field = f => f.Organization, Term = organization.Id } });
 
                 return base.QueryContainerDescriptor(descriptor, andQuery);
             }

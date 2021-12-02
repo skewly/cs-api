@@ -15,22 +15,28 @@ namespace Skewly.WebApp.Controllers
         public string Name { get; set; }
     }
 
+    public class PatchApiKey
+    {
+        public bool IsDefault { get; set; } = false;
+    }
+
     [ApiController]
-    [Route("[controller]")]
-    public class AccessController : ControllerBase
+    [Route("organizations")]
+    [Authorize]
+    public class OrganizationsController : ControllerBase
     {
         private readonly IStore<ApiKey> ApiKeys;
         private readonly IStore<OrganizationPermission> OrganizationPermissions;
         private readonly IStore<Organization> Organizations;
 
-        public AccessController(IStore<ApiKey> apiKeys, IStore<OrganizationPermission> organizationPermissions, IStore<Organization> organizations)
+        public OrganizationsController(IStore<ApiKey> apiKeys, IStore<OrganizationPermission> organizationPermissions, IStore<Organization> organizations)
         {
             ApiKeys = apiKeys;
             OrganizationPermissions = organizationPermissions;
             Organizations = organizations;
         }
 
-        [HttpPost("organizations"), Authorize]
+        [HttpPost]
         public async Task<IActionResult> CreateOrganization([FromBody] CreateOrganization body, CancellationToken ct = default)
         {
             var organization = new Organization
@@ -51,21 +57,32 @@ namespace Skewly.WebApp.Controllers
 
             _ = await OrganizationPermissions.Post(organizationPermission, ct);
 
+            _ = await ApiKeys.Post(new ApiKey { Organization = organizationId, IsDefault = true }, ct);
+
             return new CreatedResult(new Uri($"/access/organizations/{organizationId}", UriKind.Relative), organization);
         }
 
-        [Authorize, HttpGet("organizations")]
+        /// <summary>
+        /// This should be removed to avoid allowing people to create organizations
+        /// </summary>
+        [HttpPut("{id}")]
+        public async Task PutOrganization(string id, [FromBody] Organization organization, CancellationToken ct = default)
+        {
+            await Organizations.Put(id, organization, ct);
+        }
+
+        [HttpGet]
         public async Task<Page<Organization>> GetOrganizations(int skip = 0, int take = 50, CancellationToken ct = default)
         {
             var permissionsQuery = new AndQuery(new List<IQuery> {
-                new TermQuery
+                new TermQuery<OrganizationPermission, string>
                 {
-                    Field = "username",
+                    Field = f => f.Username,
                     Term = User.Identity.Name
                 },
-                new TermsQuery
+                new TermsQuery<OrganizationPermission, string>
                 {
-                    Field = "role",
+                    Field = f => f.Role,
                     Terms = new List<string> { "owner", "admin" }
                 }
             });
@@ -74,9 +91,9 @@ namespace Skewly.WebApp.Controllers
 
             var organizationIds = permissions.Results.Select(p => p.Organization);
 
-            var organizationsQuery = new TermsQuery
+            var organizationsQuery = new TermsQuery<Organization, string>
             {
-                Field = "id",
+                Field = f => f.Id,
                 Terms = organizationIds
             };
 
@@ -85,22 +102,37 @@ namespace Skewly.WebApp.Controllers
             return organizations;
         }
 
-        [HttpPut("organization/{id}")]
-        public async Task PutOrganization(string id, [FromBody] Organization organization, CancellationToken ct = default)
+        [HttpGet("{orgId}")]
+        public async Task<Organization> GetOrganization(string id, CancellationToken ct = default)
         {
-            await Organizations.Put(id, organization, ct);
+            return await Organizations.Get(id, ct);
         }
 
-        [HttpGet("organization/{orgId}/apikeys/generate")]
-        public async Task<string> GenerateApiKey(string orgId, [FromBody] ApiKey key, CancellationToken ct = default)
+        [HttpGet("{orgId}/apikeys/generate")]
+        public async Task<string> GenerateApiKey(string orgId, CancellationToken ct = default)
         {
             return await ApiKeys.Post(new ApiKey { Organization = orgId }, ct);
         }
 
-        [HttpGet("organization/{orgId}")]
-        public async Task<Organization> GetOrganization(string id, CancellationToken ct = default)
+        [HttpPatch("{orgId}/apikeys/{apiKeyId}")]
+        public async Task SetDefaultApiKey(string orgId, string apiKeyId, CancellationToken ct = default)
         {
-            return await Organizations.Get(id, ct);
+            var defaultKeySearch = new Search
+            {
+                Query = new AndQuery(new List<IQuery> { new TermQuery<ApiKey, string> { Field = f => f.Organization, Term = orgId }, new TermQuery<ApiKey, bool> { Field = f => f.IsDefault, Term = true } }),
+                Take = 1
+            };
+
+            var defaultKeyResponse = await ApiKeys.Search(defaultKeySearch, ct);
+
+            var defaultKey = defaultKeyResponse.Results.FirstOrDefault();
+
+            if (defaultKey != default)
+            {
+                await ApiKeys.Patch(defaultKey.Id, new PatchApiKey { IsDefault = false }, ct);
+            }
+
+            await ApiKeys.Patch(apiKeyId, new PatchApiKey { IsDefault = true }, ct);
         }
     }
 }

@@ -17,6 +17,7 @@ namespace Skewly.Common.Models
 
     public class ApiKey : Document
     {
+        public bool IsDefault { get; set; } = false;
         public string Organization { get; set; }
     }
 }
