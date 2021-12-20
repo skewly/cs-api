@@ -50,7 +50,7 @@ namespace Skewly.Common.Persistence
             await Cache.RemoveAsync(DetermineCacheKey(id), ct);
         }
 
-        public async Task<string> Post(T data, CancellationToken ct)
+        public async Task<T> Post(T data, CancellationToken ct)
         {
             return await Store.Post(data, ct);
         }

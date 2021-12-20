@@ -39,27 +39,26 @@ namespace Skewly.WebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateOrganization([FromBody] CreateOrganization body, CancellationToken ct = default)
         {
-            var organization = new Organization
+            var dto = new Organization
             {
                 Name = body.Name,
                 Subscription = "free"
             };
 
-            // Refactor IStore.Post() to return object instead of just the id
-            var organizationId = await Organizations.Post(organization, ct);
+            var organization = await Organizations.Post(dto, ct);
 
             var organizationPermission = new OrganizationPermission
             {
-                Organization = organizationId,
+                Organization = organization.Id,
                 Username = User.Identity.Name,
                 Role = "owner"
             };
 
             _ = await OrganizationPermissions.Post(organizationPermission, ct);
 
-            _ = await ApiKeys.Post(new ApiKey { Organization = organizationId, IsDefault = true }, ct);
+            _ = await ApiKeys.Post(new ApiKey { Organization = organization.Id, IsDefault = true }, ct);
 
-            return new CreatedResult(new Uri($"/access/organizations/{organizationId}", UriKind.Relative), organization);
+            return new CreatedResult(new Uri($"/access/organizations/{organization.Id}", UriKind.Relative), organization);
         }
 
         /// <summary>
@@ -126,7 +125,7 @@ namespace Skewly.WebApp.Controllers
         }
 
         [HttpGet("{orgId}/apikeys/generate")]
-        public async Task<string> GenerateApiKey(string orgId, CancellationToken ct = default)
+        public async Task<ApiKey> GenerateApiKey(string orgId, CancellationToken ct = default)
         {
             return await ApiKeys.Post(new ApiKey { Organization = orgId }, ct);
         }

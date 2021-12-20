@@ -42,7 +42,7 @@ namespace Skewly.WebApp.Controllers
         }
 
         [HttpPost]
-        public async Task<string> CreateExample([FromBody] Example Example, CancellationToken ct = default)
+        public async Task<Example> CreateExample([FromBody] Example Example, CancellationToken ct = default)
         {
             return await Store.Post(Example, ct);
         }

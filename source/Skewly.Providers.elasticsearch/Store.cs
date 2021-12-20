@@ -130,9 +130,10 @@ namespace Skewly.Providers.elasticsearch
             }
         }
 
-        public async Task<string> Post(T data, CancellationToken ct = default)
+        public async Task<T> Post(T data, CancellationToken ct = default)
         {
             data = BeforeWrite(data);
+
             if(string.IsNullOrEmpty(data.Id))
             {
                 data.Id = Guid.NewGuid().ToString();
@@ -145,7 +146,7 @@ namespace Skewly.Providers.elasticsearch
                 throw response.OriginalException;
             }
 
-            return response.Id;
+            return data;
         }
 
         public async Task Patch<TPatch>(string id, TPatch data, CancellationToken ct = default) where TPatch : class
