@@ -108,6 +108,23 @@ namespace Skewly.WebApp.Controllers
             return await Organizations.Get(id, ct);
         }
 
+        [HttpGet("{orgId}/apikeys")]
+        public async Task<Page<ApiKey>> GetApiKeys(string orgId, int skip = 0, int take = 50, CancellationToken ct = default)
+        {
+            // Should validate that the current user has permissions for the requested organization
+
+            var search = new Search
+            {
+                Query = new AndQuery(new List<IQuery> { new TermQuery<ApiKey, string> { Field = f => f.Organization, Term = orgId } }),
+                Skip = skip,
+                Take = take
+            };
+
+            var response = await ApiKeys.Search(search, ct);
+
+            return response;
+        }
+
         [HttpGet("{orgId}/apikeys/generate")]
         public async Task<string> GenerateApiKey(string orgId, CancellationToken ct = default)
         {
