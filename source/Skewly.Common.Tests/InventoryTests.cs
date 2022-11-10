@@ -29,6 +29,13 @@ namespace Skewly.Common.Tests
                         Id = Guid.NewGuid(),
                         Slug = "clockSpeed",
                         AllowedQuantityTypes = new List<QuantityType>() { QuantityType.Frequency }
+                    },
+                    new QuantityAttributeDefinition()
+                    {
+                        Id = Guid.NewGuid(),
+                        Slug = "speed",
+                        AllowedQuantityTypes = new List<QuantityType>() { QuantityType.Speed },
+                        IsMandatory = true
                     }
                 }
             };
@@ -41,11 +48,14 @@ namespace Skewly.Common.Tests
                 Attributes = new Dictionary<string, object>()
                 {
                     { "socket", "AM4" },
-                    { "clockSpeed", Frequency.FromGigahertz(3.8) }
+                    { "clockSpeed", Frequency.FromGigahertz(3.4) },
+                    { "speed", Speed.FromMilesPerHour(60) }
                 }
             };
 
-            Assert.IsTrue(cpuType.ValidateAttributes(ryzenCpu.Attributes));
+            var validationResult = cpuType.ValidateAttributes(ryzenCpu.Attributes);
+
+            Assert.IsTrue(validationResult.IsValid);
         }
     }
 }

@@ -12,25 +12,21 @@ namespace Skewly.Common
 
         public List<AttributeDefinition> AttributeDefinitions { get; set; }
 
-        public bool ValidateAttributes(IDictionary<string,object> attributes)
+        public ValidationResult ValidateAttributes(IDictionary<string,object> attributes)
         {
-            var isValid = true;
+            var result = new ValidationResult();
 
-            foreach(var attribute in attributes)
-            {
-                var definition = AttributeDefinitions.FirstOrDefault(d => d.Slug.Equals(attribute.Key));
+            foreach(var definition in AttributeDefinitions)
+            {                
+                if(!attributes.TryGetValue(definition.Slug, out var attribute))
+                {
+                    attribute = null;
+                }
 
-                if(definition != default)
-                {
-                    isValid &= definition.ValidateAttribute(attribute.Value);
-                }
-                else
-                {
-                    isValid = false;
-                }
+                result.Errors.AddRange(definition.ValidateAttribute(attribute).Errors);
             }
 
-            return isValid;
+            return result;
         }
     }
 }
